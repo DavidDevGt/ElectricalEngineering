@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  --panel-bg: rgba(15, 18, 22, 0.85);
+  --panel-bg: rgba(15, 18, 22, 0.88);
   --panel-border: rgba(255, 255, 255, 0.12);
   --text: #e6e9ee;
   --accent: #4fc3f7;
@@ -40,8 +40,13 @@ canvas {
   border-radius: 8px;
   backdrop-filter: blur(6px);
   min-width: 260px;
+  max-width: 320px;
   font-size: 13px;
   line-height: 1.5;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 10;
 }
 
 .panel h1 {
@@ -116,13 +121,14 @@ canvas {
 
 .panel__actions button {
   flex: 1;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid var(--panel-border);
   background: rgba(79, 195, 247, 0.12);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .panel__actions button:hover:not(:disabled) {
@@ -147,7 +153,7 @@ canvas {
   text-decoration: underline;
 }
 
-/* --- Registro de notices (bloqueos de enclavamiento, confirmaciones) --- */
+/* --- Registro de notices --- */
 
 .notice-log {
   position: absolute;
@@ -156,6 +162,7 @@ canvas {
   width: 340px;
   max-width: calc(100vw - 32px);
   pointer-events: none;
+  z-index: 10;
 }
 
 .notice-log ul {
@@ -168,6 +175,9 @@ canvas {
 }
 
 .notice-log__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 10px;
   border-radius: 6px;
   background: var(--panel-bg);
@@ -176,6 +186,48 @@ canvas {
   backdrop-filter: blur(6px);
   font-size: 12px;
   line-height: 1.4;
+  pointer-events: auto;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.notice-log__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.notice-log__close {
+  flex: none;
+  margin: -2px -2px 0 0;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  opacity: 0.5;
+  font-size: 15px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.notice-log__close:hover {
+  opacity: 1;
+}
+
+.notice-log__item--leaving {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.notice-log__item--pulse {
+  animation: notice-log-pulse 320ms ease;
+}
+
+@keyframes notice-log-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(79, 195, 247, 0);
+  }
 }
 
 .notice-log__item--success {
@@ -204,4 +256,85 @@ canvas {
   font-size: 12px;
   opacity: 0.85;
   max-width: 220px;
+  z-index: 10;
+}
+
+/* --- Responsive: móvil --- */
+
+@media (max-width: 640px) {
+  .panel {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    min-width: 0;
+    font-size: 13px;
+    padding: 10px 12px;
+    max-height: 50vh;
+    border-radius: 12px;
+  }
+
+  .panel h1 {
+    font-size: 14px;
+  }
+
+  .panel dl {
+    grid-template-columns: auto 1fr;
+    gap: 1px 6px;
+  }
+
+  .panel__actions button {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 48px;
+  }
+
+  .notice-log {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+  }
+
+  .notice-log__item {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .hint-badge {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+    max-width: none;
+    font-size: 11px;
+    text-align: center;
+    padding: 6px 10px;
+  }
+}
+
+/* --- Responsive: muy pequeño (ej. iPhone SE) --- */
+
+@media (max-width: 400px) {
+  .panel {
+    font-size: 12px;
+    padding: 8px 10px;
+    max-height: 45vh;
+  }
+
+  .panel h1 {
+    font-size: 13px;
+  }
+
+  .panel__actions button {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+
+  .hint-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+    opacity: 0.7;
+  }
 }
