@@ -5,6 +5,10 @@ import path from "path";
 
 const ROOT = process.cwd();
 
+/** Directorios que nunca contienen documentación propia del proyecto — se podan durante el
+ * recorrido recursivo para no perder tiempo bajando a node_modules en cada build. */
+const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", ".claude"]);
+
 function mdToHtml(mdContent: string): string {
   const body = marked.parse(mdContent, { async: false });
   return `<!DOCTYPE html>
@@ -85,9 +89,29 @@ function mdToHtml(mdContent: string): string {
 </html>`;
 }
 
+/** Recorre el proyecto buscando archivos .md, podando los directorios de IGNORED_DIRS y
+ * cualquier carpeta oculta — sin depender de una librería de glob externa. */
+function findMarkdownFiles(dir: string, results: string[] = []): string[] {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".") || IGNORED_DIRS.has(entry.name)) continue;
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      findMarkdownFiles(fullPath, results);
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
 export function markdownPlugin(): Plugin {
   return {
     name: "vite-plugin-markdown",
+
+    // Sirve los .md como HTML renderizado durante `vite dev` — pero este hook SOLO existe en el
+    // servidor de desarrollo. Un despliegue estático (Netlify, cualquier CDN) no ejecuta ningún
+    // proceso Node por request, así que sin el hook de abajo esto no tiene ningún efecto en
+    // producción.
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split("?")[0];
@@ -102,6 +126,25 @@ export function markdownPlugin(): Plugin {
         res.setHeader("Content-Length", Buffer.byteLength(html));
         res.end(html);
       });
+    },
+
+    // Equivalente para producción: corre una sola vez al final de `vite build` y escribe la
+    // misma conversión a HTML como archivos estáticos dentro de dist/, preservando la extensión
+    // .md y la ruta relativa exacta de cada documento. Sin esto, los .md ni siquiera llegan al
+    // build (ningún módulo JS los importa) y cualquier enlace a ellos da 404 en Netlify.
+    // Mantener la extensión .md (en vez de renombrar a .html) es deliberado: así los enlaces
+    // relativos que ya existen en toda la documentación (ej. "../investigaciones/01-x.md") siguen
+    // resolviendo sin tener que reescribir docenas de archivos. Netlify necesita, además, que se
+    // le diga explícitamente que sirva estos .md con Content-Type text/html — ver public/_headers.
+    writeBundle(options) {
+      const outDir = options.dir ?? path.join(ROOT, "dist");
+      for (const filePath of findMarkdownFiles(ROOT)) {
+        const relative = path.relative(ROOT, filePath);
+        const outPath = path.join(outDir, relative);
+        const html = mdToHtml(fs.readFileSync(filePath, "utf-8"));
+        fs.mkdirSync(path.dirname(outPath), { recursive: true });
+        fs.writeFileSync(outPath, html, "utf-8");
+      }
     },
   };
 }

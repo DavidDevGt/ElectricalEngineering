@@ -1,0 +1,30 @@
+# Netlify sirve archivos estáticos por extensión: sin esto, un .md se entrega como
+# text/markdown (o application/octet-stream) y el navegador lo descarga o muestra como texto
+# plano en vez de renderizar el HTML que genera vite-plugin-markdown.ts en el build.
+#
+# Netlify no expande "*" a través de "/", así que cada profundidad de carpeta necesita su propio
+# patrón — ver vite-plugin-markdown.ts para dónde se generan estos archivos.
+
+/*.md
+  Content-Type: text/html; charset=utf-8
+
+/investigaciones/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/adr/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/reference/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/explanation/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/how-to/*.md
+  Content-Type: text/html; charset=utf-8
+
+/docs/tutorials/*.md
+  Content-Type: text/html; charset=utf-8
