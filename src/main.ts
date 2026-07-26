@@ -1,8 +1,22 @@
+import * as THREE from "three";
 import "./style.css";
 import { SubstationModel } from "./domain/SubstationModel";
 import { SimulationClock } from "./domain/simulation/SimulationClock";
+import type { ComponentId } from "./domain/types";
+import { BAY_Z, CONDUCTOR_HEIGHT, GROUND_GRID, LAYOUT, RELAY_CABINET } from "./scene/layout";
 import { SceneManager } from "./scene/SceneManager";
+import { BusbarObject3D } from "./scene/components/BusbarObject3D";
+import { CircuitBreakerObject3D } from "./scene/components/CircuitBreakerObject3D";
+import { ConductorObject3D } from "./scene/components/ConductorObject3D";
+import { CurrentTransformerObject3D } from "./scene/components/CurrentTransformerObject3D";
+import { DisconnectorObject3D } from "./scene/components/DisconnectorObject3D";
+import { GroundGridObject3D } from "./scene/components/GroundGridObject3D";
+import { ProtectionRelayObject3D } from "./scene/components/ProtectionRelayObject3D";
+import { SurgeArresterObject3D } from "./scene/components/SurgeArresterObject3D";
 import { TransformerObject3D } from "./scene/components/TransformerObject3D";
+import { VoltageTransformerObject3D } from "./scene/components/VoltageTransformerObject3D";
+import { InspectionPanel } from "./ui/InspectionPanel";
+import { NoticeLog } from "./ui/NoticeLog";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("No se encontró el contenedor #app");
@@ -10,65 +24,235 @@ if (!app) throw new Error("No se encontró el contenedor #app");
 const model = new SubstationModel();
 const sceneManager = new SceneManager(app);
 
-const transformerObject = new TransformerObject3D(model.mainTransformer);
+// --- Construcción de la bahía (posiciones de scene/layout.ts) ---
+const transformerObject = new TransformerObject3D(model.transformer);
+transformerObject.position.set(LAYOUT.transformer, 0, BAY_Z);
 sceneManager.scene.add(transformerObject);
 
-// Capa de escena suscrita a cambios del modelo (patrón Observer, ADR-002) — el dominio no
-// conoce Three.js, la vista se entera de los cambios y se sincroniza.
-model.subscribe(() => transformerObject.sync());
+const lineDisconnectorObject = new DisconnectorObject3D(
+  model.lineDisconnector,
+  () => model.breaker.state === "open",
+);
+lineDisconnectorObject.position.set(LAYOUT.lineDisconnector, 0, BAY_Z);
+sceneManager.scene.add(lineDisconnectorObject);
 
-// --- Panel HTML de inspección (overlay HTML/CSS sobre el canvas, IDEA.md §8) ---
-const panel = document.createElement("div");
-panel.className = "panel";
-panel.innerHTML = `
-  <h1>Transformador de potencia</h1>
-  <dl>
-    <dt>Potencia nominal</dt><dd id="rated">-</dd>
-    <dt>Grupo de conexión</dt><dd id="vector-group">-</dd>
-    <dt>%Z</dt><dd id="impedance">-</dd>
-    <dt>Pérdidas hierro</dt><dd id="iron-loss">-</dd>
-    <dt>Pérdidas cobre</dt><dd id="copper-loss">-</dd>
-    <dt>Eficiencia</dt><dd id="efficiency">-</dd>
-    <dt>Carga óptima</dt><dd id="optimal-load">-</dd>
-    <dt>I falla (x nominal)</dt><dd id="fault-current">-</dd>
-  </dl>
-  <div class="control">
-    <label for="load-slider">Factor de carga: <span id="load-value">0%</span></label>
-    <input id="load-slider" type="range" min="0" max="120" value="0" step="1" />
-  </div>
-`;
-app.appendChild(panel);
+const breakerObject = new CircuitBreakerObject3D(model.breaker);
+breakerObject.position.set(LAYOUT.circuitBreaker, 0, BAY_Z);
+sceneManager.scene.add(breakerObject);
 
-function query<T extends HTMLElement>(selector: string): T {
-  const el = panel.querySelector<T>(selector);
-  if (!el) throw new Error(`No se encontró "${selector}" en el panel`);
-  return el;
+const busDisconnectorObject = new DisconnectorObject3D(
+  model.busDisconnector,
+  () => model.breaker.state === "open",
+);
+busDisconnectorObject.position.set(LAYOUT.busDisconnector, 0, BAY_Z);
+sceneManager.scene.add(busDisconnectorObject);
+
+const currentTransformerObject = new CurrentTransformerObject3D(model.lineCurrentTransformer);
+currentTransformerObject.position.set(LAYOUT.currentTransformer, 0, BAY_Z);
+sceneManager.scene.add(currentTransformerObject);
+
+const voltageTransformerObject = new VoltageTransformerObject3D(model.lineVoltageTransformer);
+voltageTransformerObject.position.set(LAYOUT.voltageTransformer, 0, BAY_Z);
+sceneManager.scene.add(voltageTransformerObject);
+
+const surgeArresterObject = new SurgeArresterObject3D(model.surgeArrester);
+surgeArresterObject.position.set(LAYOUT.surgeArrester, 0, BAY_Z);
+sceneManager.scene.add(surgeArresterObject);
+
+// La barra colectora corre a lo largo de Z y cruza el conductor de la bahía (que corre en X)
+// justo en el punto donde esta línea se conecta al bus principal — intersección visualmente
+// correcta para una sola bahía (investigaciones/06 §1).
+const busbarObject = new BusbarObject3D(model.busbar);
+busbarObject.position.set(LAYOUT.busbar, 0, BAY_Z);
+sceneManager.scene.add(busbarObject);
+
+// La malla se centra bajo el tramo de patio expuesto (entre la línea entrante y el
+// transformador), no bajo la bahía completa — es infraestructura común a todo el patio.
+// GroundGridObject3D dibuja sus conductores a "-burialDepth" respecto a su propio origen (para
+// ser físicamente honesto: están enterrados) — el plano de suelo opaco de SceneManager vive en
+// y=0, así que sin este desplazamiento la malla quedaría completamente oculta bajo tierra
+// (seguiría siendo clickeable — pickableRoots no depende del plano de suelo — pero invisible,
+// mala UX para un componente pensado para inspeccionarse). Subir el grupo por su propia
+// profundidad de enterramiento la deja apenas a nivel de superficie, visible sin dejar de
+// representar "conductores enterrados" con su opacidad reducida.
+const groundGridObject = new GroundGridObject3D(model.groundGrid);
+groundGridObject.position.set(
+  (LAYOUT.linePortal + LAYOUT.transformer) / 2,
+  GROUND_GRID.burialDepth + 0.02,
+  BAY_Z,
+);
+sceneManager.scene.add(groundGridObject);
+
+// El gabinete de relés vive en una caseta de control, no en el patio — desplazado en Z
+// respecto al eje de la bahía (scene/layout.ts: RELAY_CABINET).
+const protectionRelayObject = new ProtectionRelayObject3D(model.protectionRelay);
+protectionRelayObject.position.set(RELAY_CABINET.x, 0, RELAY_CABINET.z);
+sceneManager.scene.add(protectionRelayObject);
+
+const animatedObjects = [breakerObject, lineDisconnectorObject, busDisconnectorObject];
+const syncableObjects = [
+  transformerObject,
+  breakerObject,
+  lineDisconnectorObject,
+  busDisconnectorObject,
+  currentTransformerObject,
+  voltageTransformerObject,
+  surgeArresterObject,
+  busbarObject,
+  groundGridObject,
+  protectionRelayObject,
+];
+
+// Conductores: visualizan hasta dónde llega la energización con la maniobra actual
+// (investigaciones/11 §1 — representación múltiple conectada con el panel de inspección).
+function conductorPoint(x: number): THREE.Vector3 {
+  return new THREE.Vector3(x, CONDUCTOR_HEIGHT, BAY_Z);
 }
 
-const ratings = model.mainTransformer.ratings;
-query("#rated").textContent = `${ratings.ratedPowerMVA} MVA`;
-query("#vector-group").textContent = ratings.vectorGroup;
-query("#impedance").textContent = `${ratings.impedancePercent}%`;
-query("#iron-loss").textContent = `${ratings.ironLossKW} kW`;
+const conductorSegments: { mesh: ConductorObject3D; toNodeId: string }[] = [
+  {
+    mesh: new ConductorObject3D(conductorPoint(LAYOUT.linePortal), conductorPoint(LAYOUT.circuitBreaker)),
+    toNodeId: "junction-a",
+  },
+  {
+    mesh: new ConductorObject3D(conductorPoint(LAYOUT.circuitBreaker), conductorPoint(LAYOUT.busDisconnector)),
+    toNodeId: "junction-b",
+  },
+  {
+    mesh: new ConductorObject3D(conductorPoint(LAYOUT.busDisconnector), conductorPoint(LAYOUT.transformer)),
+    toNodeId: "busbar",
+  },
+];
+for (const { mesh } of conductorSegments) sceneManager.scene.add(mesh);
 
-const slider = query<HTMLInputElement>("#load-slider");
-const loadValueLabel = query("#load-value");
-
-function updatePanel(): void {
-  const t = model.mainTransformer;
-  loadValueLabel.textContent = `${Math.round(t.getLoadFactor() * 100)}%`;
-  query("#copper-loss").textContent = `${t.copperLossKW.toFixed(1)} kW`;
-  query("#efficiency").textContent = `${(t.efficiency * 100).toFixed(2)}%`;
-  query("#optimal-load").textContent = `${(t.optimalLoadFactor * 100).toFixed(0)}%`;
-  query("#fault-current").textContent = `${t.faultCurrentMultipleOfRated.toFixed(1)}x`;
+function syncConductors(): void {
+  const energized = model.energizedNodes();
+  for (const segment of conductorSegments) {
+    segment.mesh.setEnergized(energized.has(segment.toNodeId));
+  }
 }
 
-slider.addEventListener("input", () => {
-  model.setMainTransformerLoad(Number(slider.value) / 100);
-  updatePanel();
+// --- UI: panel de inspección genérico + registro de notices ---
+const inspectionPanel = new InspectionPanel();
+app.appendChild(inspectionPanel.element);
+
+const noticeLog = new NoticeLog();
+app.appendChild(noticeLog.element);
+
+const hintBadge = document.createElement("div");
+hintBadge.className = "hint-badge";
+hintBadge.textContent =
+  "Click en un equipo del patio para inspeccionarlo. El seccionador solo se maniobra con el interruptor abierto.";
+app.appendChild(hintBadge);
+
+let selectedId: ComponentId | null = null;
+
+function buildLoadSliderControl(): HTMLElement {
+  const wrapper = document.createElement("div");
+  wrapper.className = "control";
+  wrapper.innerHTML = `
+    <label>Factor de carga: <span data-role="value">${Math.round(model.transformer.getLoadFactor() * 100)}%</span></label>
+    <input type="range" min="0" max="120" step="1" value="${Math.round(model.transformer.getLoadFactor() * 100)}" />
+  `;
+  const input = wrapper.querySelector("input")!;
+  const valueLabel = wrapper.querySelector("[data-role='value']")!;
+  input.addEventListener("input", () => {
+    const percent = Number(input.value);
+    valueLabel.textContent = `${percent}%`;
+    model.setMainTransformerLoad(percent / 100);
+  });
+  return wrapper;
+}
+
+function renderInspection(): void {
+  if (!selectedId) {
+    inspectionPanel.clear();
+    return;
+  }
+  const component = model.getComponent(selectedId);
+  if (!component) {
+    inspectionPanel.clear();
+    return;
+  }
+  inspectionPanel.show(component.inspect());
+}
+
+function selectComponent(id: ComponentId): void {
+  selectedId = id;
+  renderInspection();
+  inspectionPanel.setExtra(id === model.transformer.id ? buildLoadSliderControl() : null);
+}
+
+function findComponentId(object: THREE.Object3D): ComponentId | null {
+  let current: THREE.Object3D | null = object;
+  while (current) {
+    const id = current.userData?.["componentId"];
+    if (typeof id === "string") return id;
+    current = current.parent;
+  }
+  return null;
+}
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const pickableRoots = [
+  transformerObject,
+  lineDisconnectorObject,
+  breakerObject,
+  busDisconnectorObject,
+  currentTransformerObject,
+  voltageTransformerObject,
+  surgeArresterObject,
+  busbarObject,
+  groundGridObject,
+  protectionRelayObject,
+];
+
+sceneManager.renderer.domElement.addEventListener("pointerdown", (event) => {
+  const rect = sceneManager.renderer.domElement.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, sceneManager.camera);
+
+  const intersections = raycaster.intersectObjects(pickableRoots, true);
+  if (intersections.length === 0) return;
+
+  const id = findComponentId(intersections[0]!.object);
+  if (id) selectComponent(id);
 });
 
-updatePanel();
+// --- Eventos de dominio → escena + UI (patrón Observer, ADR-002) ---
+model.events.subscribe((event) => {
+  switch (event.type) {
+    case "component-changed": {
+      for (const object of syncableObjects) object.sync();
+      syncConductors();
+      renderInspection();
+      break;
+    }
+    case "notice": {
+      noticeLog.push(event.level, event.message);
+      break;
+    }
+    default:
+      break;
+  }
+});
+
+syncConductors();
+
+// Hook de depuración solo-en-desarrollo: permite a los scripts de verificación (Playwright)
+// proyectar coordenadas mundo→pantalla y leer el estado del dominio sin duplicar lógica de
+// clicking. `import.meta.env.DEV` se reemplaza por `false` en el build de producción y Vite
+// elimina esta rama por dead-code elimination — no viaja al bundle final.
+if (import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>)["__debug"] = {
+    THREE,
+    model,
+    sceneManager,
+    pickableRoots,
+  };
+}
 
 // --- Bucle principal: timestep fijo + acumulador (ADR-005 / investigaciones/09) ---
 const clock = new SimulationClock(60);
@@ -79,6 +263,8 @@ function frame(nowMs: number): void {
   lastTimeMs = nowMs;
 
   clock.advance(realDeltaSeconds, (fixedDelta) => model.step(fixedDelta));
+
+  for (const object of animatedObjects) object.animate(realDeltaSeconds);
 
   sceneManager.update();
   sceneManager.render();

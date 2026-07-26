@@ -1,3 +1,5 @@
+import type { ComponentId, InspectionData, SubstationComponent } from "../types";
+
 /**
  * Datos de placa de un transformador de potencia.
  * Ver investigaciones/01-transformadores-potencia.md para la derivación de cada fórmula
@@ -20,13 +22,18 @@ export interface TransformerRatings {
  * Modelo de dominio de un transformador de potencia. Sin dependencia de Three.js
  * (ver docs/adr/0002-separacion-modelo-dominio-render.md) — testeable sin WebGL.
  */
-export class Transformer {
+export class Transformer implements SubstationComponent {
+  readonly id: ComponentId;
+  readonly kind = "transformer" as const;
+  readonly label: string;
   readonly ratings: TransformerRatings;
 
   /** Factor de carga (x): 0 = sin carga, 1 = carga nominal. Puede superar 1 (sobrecarga). */
   private loadFactor = 0;
 
-  constructor(ratings: TransformerRatings) {
+  constructor(id: ComponentId, label: string, ratings: TransformerRatings) {
+    this.id = id;
+    this.label = label;
     this.ratings = ratings;
   }
 
@@ -71,5 +78,31 @@ export class Transformer {
    * I_falla = I_nominal × (100/%Z) (§4.2). Desprecia la impedancia de red aguas arriba. */
   get faultCurrentMultipleOfRated(): number {
     return 100 / this.ratings.impedancePercent;
+  }
+
+  inspect(): InspectionData {
+    const closeToOptimal = Math.abs(this.loadFactor - this.optimalLoadFactor) < 0.15;
+    return {
+      title: this.label,
+      subtitle: `${this.ratings.ratedPowerMVA} MVA · ${this.ratings.vectorGroup}`,
+      rows: [
+        { label: "Potencia nominal", value: `${this.ratings.ratedPowerMVA} MVA` },
+        { label: "Grupo de conexión", value: this.ratings.vectorGroup },
+        { label: "%Z", value: `${this.ratings.impedancePercent}%` },
+        { label: "Pérdidas hierro", value: `${this.ironLossKW.toFixed(1)} kW` },
+        { label: "Pérdidas cobre", value: `${this.copperLossKW.toFixed(1)} kW` },
+        {
+          label: "Eficiencia",
+          value: `${(this.efficiency * 100).toFixed(2)}%`,
+          tone: closeToOptimal ? "good" : "neutral",
+          hint: `Óptima cerca de ${(this.optimalLoadFactor * 100).toFixed(0)}% de carga`,
+        },
+        { label: "I falla (x nominal)", value: `${this.faultCurrentMultipleOfRated.toFixed(1)}x` },
+      ],
+      reference: {
+        text: "investigaciones/01 — Transformadores de potencia",
+        href: "../investigaciones/01-transformadores-potencia.md",
+      },
+    };
   }
 }

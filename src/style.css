@@ -78,3 +78,130 @@ canvas {
 .panel input[type="range"] {
   width: 100%;
 }
+
+/* --- Panel de inspección genérico --- */
+
+.panel--inspection {
+  max-width: 320px;
+}
+
+.panel__empty {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.panel__subtitle {
+  margin: -4px 0 10px;
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.panel dd[data-tone="good"] {
+  color: #66bb6a;
+}
+
+.panel dd[data-tone="warning"] {
+  color: #ffa726;
+}
+
+.panel dd[data-tone="danger"] {
+  color: #ef5350;
+}
+
+.panel__actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.panel__actions button {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: rgba(79, 195, 247, 0.12);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.panel__actions button:hover:not(:disabled) {
+  background: rgba(79, 195, 247, 0.24);
+  border-color: var(--accent);
+}
+
+.panel__actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.panel__reference {
+  display: block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.panel__reference:hover {
+  text-decoration: underline;
+}
+
+/* --- Registro de notices (bloqueos de enclavamiento, confirmaciones) --- */
+
+.notice-log {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.notice-log ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notice-log__item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-left: 3px solid var(--accent);
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.notice-log__item--success {
+  border-left-color: #66bb6a;
+}
+
+.notice-log__item--warning {
+  border-left-color: #ffa726;
+}
+
+.notice-log__item--danger {
+  border-left-color: #ef5350;
+}
+
+/* --- Ayuda / leyenda --- */
+
+.hint-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  opacity: 0.85;
+  max-width: 220px;
+}

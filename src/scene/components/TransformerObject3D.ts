@@ -25,7 +25,8 @@ export class TransformerObject3D extends THREE.Group {
     this.transformer = transformer;
     this.name = "Transformador de potencia";
     this.userData = {
-      componentType: "transformer",
+      componentId: transformer.id,
+      componentType: transformer.kind,
       ratings: transformer.ratings,
     };
 

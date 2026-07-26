@@ -14,15 +14,18 @@ export class SceneManager {
 
   constructor(container: HTMLElement) {
     this.scene.background = new THREE.Color(0x05070a);
-    this.scene.fog = new THREE.Fog(0x05070a, 14, 45);
+    this.scene.fog = new THREE.Fog(0x05070a, 20, 65);
 
     this.camera = new THREE.PerspectiveCamera(
-      45,
+      50,
       window.innerWidth / window.innerHeight,
       0.1,
-      200,
+      300,
     );
-    this.camera.position.set(6, 4, 7);
+    // Encuadre pensado para una bahía completa (scene/layout.ts: ~23 m de ancho en X) — no solo
+    // para un único componente. Ver docs/how-to/agregar-un-componente-3d.md antes de asumir que
+    // hay que reposicionar la cámara al agregar equipos nuevos: el layout ya reserva su lugar.
+    this.camera.position.set(-2, 11, 22);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -31,8 +34,10 @@ export class SceneManager {
     container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.target.set(0, 1, 0);
+    this.controls.target.set(-2, 2, 0);
     this.controls.enableDamping = true;
+    this.controls.minDistance = 4;
+    this.controls.maxDistance = 60;
 
     this.setupLights();
     this.setupGround();
@@ -52,11 +57,11 @@ export class SceneManager {
     // demasiado ajustada y produce "shadow acne" (artefactos triangulares) en la base de los
     // objetos — visible al verificar la primera captura de pantalla del boilerplate.
     sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 40;
-    sun.shadow.camera.left = -15;
-    sun.shadow.camera.right = 15;
-    sun.shadow.camera.top = 15;
-    sun.shadow.camera.bottom = -15;
+    sun.shadow.camera.far = 55;
+    sun.shadow.camera.left = -24;
+    sun.shadow.camera.right = 18;
+    sun.shadow.camera.top = 14;
+    sun.shadow.camera.bottom = -14;
     sun.shadow.bias = -0.0015;
     sun.shadow.normalBias = 0.02;
     this.scene.add(sun);

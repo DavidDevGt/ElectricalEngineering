@@ -4,13 +4,21 @@
 > contenido técnico de la experiencia interactiva sea correcto, y el diseño de cómo esa teoría se
 > traduce en una experiencia 3D (Three.js) para aprender/reforzar conceptos.
 >
-> **Investigación profunda**: la carpeta [investigaciones/](investigaciones/) contiene 8
-> documentos con rigor de normas IEEE/IEC, ecuaciones y fuentes primarias (transformadores de
-> potencia, interruptores y arco eléctrico, coordinación de protecciones, puesta a tierra IEEE 80,
-> coordinación de aislamiento, topologías y confiabilidad, transformadores de instrumento, y
-> cortocircuito/per-unit). Este documento resume e integra esos hallazgos; cada sección enlaza al
-> documento fuente correspondiente para el detalle completo — ver
+> **Investigación profunda**: la carpeta [investigaciones/](investigaciones/) contiene 15
+> documentos con rigor de normas IEEE/IEC, ecuaciones y fuentes primarias — teoría eléctrica
+> (01-08), ingeniería de software del simulador (09-12) e ingeniería de la propia documentación
+> (13-15). Este documento resume e integra los hallazgos de teoría eléctrica; cada sección enlaza
+> al documento fuente correspondiente para el detalle completo — ver
 > [investigaciones/README.md](investigaciones/README.md) para el índice.
+>
+> **Estado de implementación**: el simulador corre (`npm run dev`) con una bahía de línea completa
+> — 10 componentes (transformador, interruptor, 2 seccionadores, TC, TP, pararrayos, barra, malla
+> de tierra, relé) en **modo inspección** (click → panel de datos técnicos) y **modo maniobra**
+> (enclavamiento real interruptor/seccionador, con bloqueo y razón mostrada). Ver
+> [`docs/README.md`](docs/README.md) para el estado exacto de la documentación y
+> [`docs/adr/`](docs/adr/README.md) para las decisiones de arquitectura ya tomadas. Fuera de
+> alcance de esta primera versión: modo falla (arco, TCC, heatmap) y modo diseño de topologías —
+> ver §9.
 
 ---
 
@@ -488,16 +496,33 @@ tras la investigación profunda, a un **mecanismo físico real**, no solo a una 
 
 ---
 
-## 9. Próximos pasos
+## 9. Estado y próximos pasos
 
-1. Confirmar alcance del MVP (¿inspección + maniobra primero, dejar falla/diseño para v2?).
-2. Scaffold del proyecto (Vite + Three.js/TS).
-3. Modelo de dominio eléctrico mínimo (transformador, interruptor, seccionador, TC/TP,
-   pararrayos, relé) con sus reglas de negocio (ej. bloqueo de apertura de seccionador con carga,
-   discriminación de inrush en 87T).
-4. Primer componente 3D completo (transformador) como patrón de referencia para el resto —
-   incluye ya varias de las mecánicas de mayor prioridad pedagógica (curva de eficiencia, %Z,
-   inrush) documentadas en investigación 01.
+### Completado (MVP: inspección + maniobra)
+
+1. ✅ Alcance del MVP confirmado: inspección + maniobra primero, falla/diseño para v2.
+2. ✅ Scaffold del proyecto (Vite + Three.js/TS), con los 9 ADRs de `docs/adr/` implementados.
+3. ✅ Modelo de dominio (`SubstationComponent`, `EventBus`, `StateMachine`, `ConnectivityGraph`)
+   con las 10 piezas del patio — ver `docs/how-to/agregar-un-componente-3d.md` para el patrón
+   exacto usado.
+4. ✅ Panel de inspección genérico (no un panel por componente) + selección por raycaster +
+   registro de notices — cualquier componente que implemente `inspect()` se muestra automático.
+5. ✅ Modo maniobra: enclavamiento real interruptor/seccionador (investigaciones/02 §5), con
+   bloqueo, razón mostrada, y propagación visual de energización por la bahía (conductores +
+   barra colectora cambian de color según el grafo de conectividad).
+6. ✅ 2 tutoriales verificados end-to-end con Playwright contra la app corriendo (no
+   especulativos) — ver `docs/tutorials/`.
+
+### Pendiente (v2 — fuera de alcance del MVP actual)
+
+7. Modo falla: inyección de cortocircuito, secuencia relé→interruptor con tiempos reales, arco de
+   plasma (investigación 02), discriminación de inrush en 87T (investigación 01 §7).
+8. Modo diseño: constructor de topologías de barras sobre `ConnectivityGraph` (ya existe la base
+   en `src/domain/topology/Graph.ts`, investigación 06) — comparar confiabilidad entre las 6
+   configuraciones.
+9. Visualizaciones avanzadas de investigación 10: heatmap de la malla de tierra (viridis,
+   `DataTexture`), curvas TCC interactivas, osciloscopios 2D de corriente/tensión.
+10. Modo quiz/evaluación.
 5. Iterar componente por componente siguiendo la tabla de la sección 7, priorizando por relación
    valor-pedagógico / costo-de-implementación (cada investigación individual trae su propio
    ranking de prioridad en su sección final).
