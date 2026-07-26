@@ -1,0 +1,80 @@
+:root {
+  color-scheme: dark;
+  --panel-bg: rgba(15, 18, 22, 0.85);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text: #e6e9ee;
+  --accent: #4fc3f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: #05070a;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+canvas {
+  display: block;
+}
+
+.panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  min-width: 260px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.panel h1 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.panel dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+.panel dt {
+  opacity: 0.7;
+}
+
+.panel dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel .control {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel input[type="range"] {
+  width: 100%;
+}
