@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Tu navegador debería abrirse solo en `http://localhost:5173`. Verás un cubo gris oscuro flotando
+Tu navegador debería abrirse solo en `http://localhost:8005`. Verás un cubo gris oscuro flotando
 sobre un piso casi negro, con tres postes finos saliendo de su parte superior y un panel con datos
 numéricos en la esquina superior izquierda.
 

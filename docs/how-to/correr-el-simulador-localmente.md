@@ -14,8 +14,11 @@ Requiere Node.js 20+ (verificado con Node 22) y npm.
    npm run dev
    ```
 
-   Vite sirve el proyecto en `http://localhost:5173` y abre el navegador automáticamente. Los
-   cambios en `src/` se reflejan en vivo (hot module replacement) sin recargar la página.
+Vite sirve el proyecto en `http://localhost:8005` y abre el navegador automáticamente. Los
+    cambios en `src/` se reflejan en vivo (hot module replacement) sin recargar la página.
+
+    Para acceder desde otro dispositivo en la misma red (VPN), usa la IP de tu máquina:
+    `http://192.168.196.42:8005` (reemplaza con la IP de tu interfaz de red).
 
 3. Mueve el slider **Factor de carga** del panel superior izquierdo. El transformador recalcula
    pérdidas y eficiencia en tiempo real, y la esfera de estado sobre el tanque cambia de ámbar a
@@ -31,9 +34,9 @@ Requiere Node.js 20+ (verificado con Node 22) y npm.
 
 ## Precaución
 
-Si el puerto 5173 ya está en uso por una instancia anterior del servidor, Vite tomará el
+Si el puerto 8005 ya está en uso por una instancia anterior del servidor, Vite tomará el
 siguiente puerto libre automáticamente y lo mostrará en la terminal — no asumas que siempre es
-5173 si tenías otra instancia corriendo.
+8005 si tenías otra instancia corriendo.
 
 ## Ver también
 
