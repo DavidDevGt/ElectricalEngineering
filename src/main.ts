@@ -147,6 +147,11 @@ app.appendChild(hintBadge);
 
 let selectedId: ComponentId | null = null;
 
+// En pantallas angostas, una card con la tabla completa de datos (9-11 filas en componentes como
+// la malla de tierra o el relé) tapa buena parte de la escena e interfiere con arrastrar la
+// cámara — arranca colapsada ahí y expandida en desktop, donde el espacio no es un problema.
+const MOBILE_QUERY = window.matchMedia("(max-width: 640px)");
+
 function buildLoadSliderControl(): HTMLElement {
   const wrapper = document.createElement("div");
   wrapper.className = "control";
@@ -181,6 +186,12 @@ function selectComponent(id: ComponentId): void {
   selectedId = id;
   renderInspection();
   inspectionPanel.setExtra(id === model.transformer.id ? buildLoadSliderControl() : null);
+  inspectionPanel.setCollapsed(MOBILE_QUERY.matches);
+
+  // El badge ya cumplió su función en cuanto el usuario inspecciona algo por primera vez — lo
+  // ocultamos para que no siga compitiendo por el mismo espacio que la card (en mobile ambos
+  // colapsan a la franja superior completa, ver src/style.css).
+  hintBadge.hidden = true;
 }
 
 function findComponentId(object: THREE.Object3D): ComponentId | null {
