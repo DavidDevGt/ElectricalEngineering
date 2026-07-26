@@ -6,21 +6,17 @@ la explicación teórica (esa vive en [`../explanation/`](../explanation/README.
 debe desviarse a explicar teoría — ver
 [investigación 13 §1.2](../../investigaciones/13-documentacion-framework-diataxis.md)).
 
-## Estado: vacío intencionalmente
+## Tutoriales disponibles
 
-El proyecto está en fase de investigación y diseño (ver [`../../IDEA.md`](../../IDEA.md)) — no hay
-código ejecutable todavía, así que no existe nada que "enseñar a hacer" dentro de un simulador que
-aún no existe. Escribir tutoriales ahora produciría documentación ficticia, desalineada del código
-real en cuanto empiece a escribirse.
+| # | Tutorial | Qué aprendes haciendo |
+|---|---|---|
+| 1 | [Tu primera inspección del transformador](01-tu-primera-inspeccion-del-transformador.md) | Levantar el simulador y descubrir, moviendo un slider, por qué existe un punto de carga de máxima eficiencia |
 
-Esta carpeta se deja creada (no ausente) a propósito, para que el primer tutorial real —
-probablemente algo como "Tu primera inspección de la subestación" o "Simula tu primera falla" —
-tenga ya un lugar reservado y siga la disciplina de escritura de tutorial (primera persona del
-plural, "vamos a…"; segunda persona para el lector; sin digresión teórica) desde el primer commit
-de código, en vez de terminar mezclado dentro de un README.
+## Próximos tutoriales (a escribir cuando exista el componente correspondiente)
 
-## Mientras tanto
+- Maniobra segura: abrir y cerrar un circuito con interruptor y seccionador enclavados.
+- Tu primera falla simulada: inyectar un cortocircuito y observar la secuencia de protección.
 
-Consulta [`../../IDEA.md`](../../IDEA.md) §9 ("Próximos pasos") para el estado de implementación, y
-[`../adr/`](../adr/README.md) para las decisiones de arquitectura ya tomadas que definirán cómo se
-verá el primer tutorial.
+Cada tutorial nuevo debe seguir la disciplina de escritura de este cuadrante: primera persona del
+plural para el narrador ("vamos a..."), segunda persona para quien lee, resultado visible en cada
+paso, y ninguna digresión teórica — esa va enlazada, no incrustada.

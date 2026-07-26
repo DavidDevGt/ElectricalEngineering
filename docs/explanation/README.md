@@ -4,7 +4,13 @@ Este cuadrante responde **"¿por qué?"** — contexto, razonamiento, alternativ
 descartadas. Es el único cuadrante de Diátaxis que admite opinión y comparación de enfoques
 (ver [investigación 13, §1.2](../../investigaciones/13-documentacion-framework-diataxis.md)).
 
-## Dónde está el contenido
+## Contenido propio de esta carpeta
+
+| Documento | Trata sobre |
+|---|---|
+| [`filosofia-del-proyecto.md`](filosofia-del-proyecto.md) | Por qué el proyecto está diseñado como está — fidelidad conceptual, separación dominio/render, por qué existe tanta investigación antes de tener UI completa |
+
+## Dónde está el resto del contenido
 
 No se duplica aquí: el cuadrante de explicación de este proyecto **es**
 [`../../investigaciones/`](../../investigaciones/README.md) — 15 documentos que cubren desde la

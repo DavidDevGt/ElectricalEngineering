@@ -11,10 +11,10 @@ que fundamenta estas decisiones en
 
 | Carpeta | Cuadrante Diátaxis | Pregunta que responde | Estado |
 |---|---|---|---|
-| [`explanation/`](explanation/README.md) | Explicación | "¿Por qué...?" | Cubierto — es [`../investigaciones/`](../investigaciones/README.md) |
-| [`reference/`](reference/README.md) | Referencia | "¿Qué es...?" (consulta rápida) | En construcción |
-| [`tutorials/`](tutorials/README.md) | Tutorial | "¿Puedes enseñarme a...?" | Vacío — no hay código todavía |
-| [`how-to/`](how-to/README.md) | Guía how-to | "¿Cómo hago...?" | Vacío — no hay código todavía |
+| [`explanation/`](explanation/README.md) | Explicación | "¿Por qué...?" | [`../investigaciones/`](../investigaciones/README.md) (15 docs) + 1 documento propio (filosofía del proyecto) |
+| [`reference/`](reference/README.md) | Referencia | "¿Qué es...?" (consulta rápida) | 7 documentos (niveles de tensión, BIL/BSL, IEEE 80, per-unit, topologías, glosario, normas) |
+| [`tutorials/`](tutorials/README.md) | Tutorial | "¿Puedes enseñarme a...?" | 1 tutorial (inspección del transformador) |
+| [`how-to/`](how-to/README.md) | Guía how-to | "¿Cómo hago...?" | 4 guías (correr el simulador, agregar componente 3D, escribir ADR, agregar investigación) |
 | [`adr/`](adr/README.md) | *(no es un cuadrante Diátaxis)* | "¿Por qué se decidió así, técnicamente?" | 9 decisiones registradas |
 
 **Regla de oro** (la razón de ser de esta estructura, ver investigación 13 §1.3): cada documento
@@ -25,13 +25,12 @@ en dos documentos, no de que el cuadrante está mal elegido.
 
 ## Estado actual del proyecto
 
-El proyecto está en fase de **investigación y diseño** — no existe código todavía (ver
-[../IDEA.md](../IDEA.md) para la visión completa y [`../investigaciones/`](../investigaciones/README.md)
-para la investigación técnica de soporte, 15 documentos entre teoría eléctrica e ingeniería de
-software del propio simulador). Por eso `tutorials/` y `how-to/` existen como carpetas con un
-placeholder explícito en vez de estar ausentes: reservan su lugar y su disciplina de escritura
-desde antes del primer commit de código, para que la primera guía de instalación no termine
-mezclada dentro de un README o de `IDEA.md`.
+El simulador tiene su primera pieza vertical completa: el **transformador de potencia**
+(modelo de dominio + objeto 3D + panel interactivo), corriendo sobre un boilerplate Vite +
+TypeScript + Three.js que implementa los 9 ADRs registrados (ver [../IDEA.md](../IDEA.md) para la
+visión completa y [`../investigaciones/`](../investigaciones/README.md) para las 15 investigaciones
+de soporte). `tutorials/` y `how-to/` dejaron de ser placeholders — ya documentan pasos reales,
+verificados contra el código en ejecución, no instrucciones especulativas.
 
 ## Para contribuir documentación
 

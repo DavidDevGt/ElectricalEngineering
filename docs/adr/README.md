@@ -29,11 +29,6 @@ qué* se decidió algo en su momento.
 
 ## Cómo escribir un ADR nuevo
 
-1. Copia [`_template.md`](_template.md) a `NNNN-titulo-corto-en-kebab-case.md` (siguiente número
-   disponible).
-2. Completa **Contexto**, **Fuerzas impulsoras**, **Opciones consideradas** y **Pros/contras**
-   antes de escribir la Decisión — el valor del formato MADR está en forzar que las alternativas
-   descartadas queden documentadas, no en llegar rápido a la conclusión.
-3. La sección **"Señal de escalar / revisar esta decisión"** debe ser una condición verificable,
-   no una vaguedad tipo "si el proyecto crece mucho".
-4. Añade la fila correspondiente a la tabla de este índice.
+Ver [`../how-to/escribir-un-adr-nuevo.md`](../how-to/escribir-un-adr-nuevo.md) — guía paso a paso
+(no se duplica aquí, ver la regla de un cuadrante por documento en
+[investigación 13](../../investigaciones/13-documentacion-framework-diataxis.md)).
